@@ -60,6 +60,13 @@ pub fn handle_users(user_amount: u32) {
     render_users();
 }
 
+/// Initializes a user list with a specified amount of users. Returns a callback to re-generate users.
+///
+/// ### Parameters
+/// * `user_amount` - The amount of users to be generated and rendered.
+///
+/// ### Returns
+/// A callback that works similar to this function but only re-generates the user list.
 #[wasm_bindgen]
 pub fn init(user_amount: u32) -> JsValue {
     let window: web_sys::Window = web_sys::window().expect("No global `window` exists");
@@ -68,10 +75,6 @@ pub fn init(user_amount: u32) -> JsValue {
     let app_element: web_sys::Element = document
         .get_element_by_id("App")
         .expect("an element with id app must exist");
-
-    // Create re-init button
-    let re_init_button_element: web_sys::Element = document.create_element("button").unwrap();
-    re_init_button_element.set_id("re_init_button");
 
     // Create user list element
     let user_list_element: web_sys::Element = document.create_element("ul").unwrap();
