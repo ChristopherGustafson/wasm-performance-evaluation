@@ -1,0 +1,3 @@
+
+build: 
+	wasm-pack build --out-dir ../wasm-build

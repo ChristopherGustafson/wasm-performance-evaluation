@@ -1,0 +1,8 @@
+#user_list {
+    padding-left: 0;
+    list-style-type: none;
+}
+
+#user_list > li > *:first-child {
+    padding-right: 1rem;
+}
