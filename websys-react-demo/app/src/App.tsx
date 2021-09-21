@@ -1,28 +1,37 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
+import Js from "./Js";
+import Wasm from "./Wasm";
 
-type ChangeAmountCallback = (amount: number) => void;
+enum Implementation {
+    WASM = "WASM",
+    JS = "JS",
+}
 
 const App = () => {
-    const [changeAmountCallback, setChangeAmountCallback] = useState<ChangeAmountCallback>();
-    const [amount, setAmount] = useState(100);
+    const [implementation, setImplementation] = useState<Implementation>(Implementation.WASM);
 
-    useEffect(() => {
-        import("wasm").then((module) => {
-            const cb: ChangeAmountCallback = module.init(100);
-            setChangeAmountCallback(() => cb);
-        });
-    }, []);
+    const getImplementation = () => {
+        switch (implementation) {
+            case Implementation.WASM:
+                return <Wasm />;
+            case Implementation.JS:
+                return <Js />;
+        }
+    };
 
-    const onAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const newValue = parseInt(event.target.value);
-        setAmount(newValue);
-        changeAmountCallback && changeAmountCallback(newValue);
+    const onSelectImplementation = (event: ChangeEvent<HTMLSelectElement>) => {
+        setImplementation(event.target.value as Implementation);
     };
 
     return (
         <div>
-            {!!changeAmountCallback && <input type="number" value={amount} onChange={onAmountChange} />}
-            <div id="App" />
+            <select onChange={onSelectImplementation}>
+                {Object.values(Implementation).map((impl) => {
+                    return <option value={impl}>{impl}</option>;
+                })}
+            </select>
+            <br />
+            {getImplementation()}
         </div>
     );
 };
