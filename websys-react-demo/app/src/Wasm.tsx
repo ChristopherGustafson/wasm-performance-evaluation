@@ -1,7 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { ITERATIONS, USER_AMOUNTS } from "./lib/experiment";
 import measureTime from "./lib/measureTime";
-import dataToCsv from "./lib/toCsv";
+import dataToCSV from "./lib/toCSV";
 
 const wasm = import("wasm");
 
@@ -49,7 +49,7 @@ const Wasm: React.FC = () => {
                 results[amount].push(sortingTime);
             }
         }
-        setCsvUrl(dataToCsv(results));
+        setCsvUrl(dataToCSV(results));
     };
 
     return (

@@ -1,8 +1,9 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { name } from "faker/locale/en";
 import measureTime from "./lib/measureTime";
-import dataToCsv from "./lib/toCsv";
+
 import { ITERATIONS, USER_AMOUNTS } from "./lib/experiment";
+import dataToCSV from "./lib/toCSV";
 
 type User = {
     id: number;
@@ -89,7 +90,7 @@ const Js = () => {
                 results[amount].push(sortingTime);
             }
         }
-        setCsvUrl(dataToCsv(results));
+        setCsvUrl(dataToCSV(results));
     };
 
     return (

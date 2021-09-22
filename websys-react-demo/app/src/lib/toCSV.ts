@@ -1,3 +1,8 @@
+/**
+ * From a matrix of values, create a stringified CSV-version of the matrix
+ * @param matrix
+ * @returns A CSV-string of the matrix
+ */
 const matrixToCSV = (matrix: (string | number)[][]) => {
     const csvArray: string[] = [];
     for (const row of matrix) {
@@ -6,7 +11,12 @@ const matrixToCSV = (matrix: (string | number)[][]) => {
     return csvArray.join("\r\n");
 };
 
-const dataToCsv = (data: { [amount: number]: number[] }): string => {
+/**
+ * From a data-object, generate a url to download a CSV with the data
+ * @param {{[amount: number]: number[]}} data An object with keys being an array of metrics
+ * @returns An object URL, can be used in a link-element to download on click.
+ */
+const dataToCSV = (data: { [amount: number]: number[] }): string => {
     const amounts = Object.keys(data);
 
     const iterationsMatrix: number[][] = [];
@@ -27,4 +37,4 @@ const dataToCsv = (data: { [amount: number]: number[] }): string => {
     return URL.createObjectURL(blob);
 };
 
-export default dataToCsv;
+export default dataToCSV;
