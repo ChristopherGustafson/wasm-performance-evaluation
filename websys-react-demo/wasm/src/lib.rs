@@ -1,9 +1,9 @@
 mod user_faker;
-
 use wasm_bindgen::prelude::*;
 
 static mut USERS: Vec<user_faker::User> = Vec::new();
 
+#[wasm_bindgen]
 pub fn render_users() -> () {
     let window: web_sys::Window = web_sys::window().expect("No global `window` exists");
     let document: web_sys::Document = window.document().expect("should have a document on window");
@@ -36,6 +36,7 @@ pub fn render_users() -> () {
     }
 }
 
+#[wasm_bindgen]
 pub fn generate_users(user_amount: u32) {
     unsafe {
         USERS = (0..user_amount)
@@ -44,6 +45,7 @@ pub fn generate_users(user_amount: u32) {
     };
 }
 
+#[wasm_bindgen]
 pub fn sort_users() {
     unsafe {
         USERS.sort_by(|a, b| {
@@ -54,21 +56,10 @@ pub fn sort_users() {
     };
 }
 
-pub fn handle_users(user_amount: u32) {
-    generate_users(user_amount);
-    sort_users();
-    render_users();
-}
-
-/// Initializes a user list with a specified amount of users. Returns a callback to re-generate users.
+/// Initializes a user list.
 ///
-/// ### Parameters
-/// * `user_amount` - The amount of users to be generated and rendered.
-///
-/// ### Returns
-/// A callback that works similar to this function but only re-generates the user list.
 #[wasm_bindgen]
-pub fn init(user_amount: u32) -> JsValue {
+pub fn init() {
     let window: web_sys::Window = web_sys::window().expect("No global `window` exists");
     let document: web_sys::Document = window.document().expect("should have a document on window");
 
@@ -80,16 +71,4 @@ pub fn init(user_amount: u32) -> JsValue {
     let user_list_element: web_sys::Element = document.create_element("ul").unwrap();
     user_list_element.set_id("user_list");
     app_element.append_child(&user_list_element).unwrap();
-
-    handle_users(user_amount);
-
-    let on_change_user_amount_cb =
-        Closure::wrap(
-            Box::new(|new_user_amount| handle_users(new_user_amount)) as Box<dyn FnMut(u32) -> ()>
-        );
-
-    let ret = on_change_user_amount_cb.as_ref().clone();
-
-    on_change_user_amount_cb.forget();
-    return ret;
 }

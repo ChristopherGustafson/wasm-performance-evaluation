@@ -1,27 +1,44 @@
 import { ChangeEvent, useEffect, useState } from "react";
+import measureTime from "./lib/measureTime";
 
-type ChangeAmountCallback = (amount: number) => void;
+const wasm = import("wasm");
 
-const Wasm = () => {
-    const [changeAmountCallback, setChangeAmountCallback] = useState<ChangeAmountCallback>();
-    const [amount, setAmount] = useState(100);
+const Users: React.FC = () => {
+    return <div id="App" />;
+};
+
+const Wasm: React.FC = () => {
+    const [amount, setAmount] = useState("100");
 
     useEffect(() => {
-        import("wasm").then((module) => {
-            const cb: ChangeAmountCallback = module.init(100);
-            setChangeAmountCallback(() => cb);
+        wasm.then((module) => {
+            module.init();
         });
     }, []);
 
-    const onAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const newValue = parseInt(event.target.value);
-        setAmount(newValue);
-        changeAmountCallback && changeAmountCallback(newValue);
+    const updateUserList = (value: string) => {
+        const parsedValue = value === "" ? 0 : parseInt(value);
+        wasm.then((module) => {
+            module.generate_users(parsedValue);
+            measureTime(module.sort_users, `[WASM] sort ${parsedValue} users`);
+            module.render_users();
+        });
     };
+
+    const onAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setAmount(event.target.value);
+        updateUserList(event.target.value);
+    };
+
+    const refresh = () => {
+        updateUserList(amount);
+    };
+
     return (
         <>
-            {!!changeAmountCallback && <input type="number" value={amount} onChange={onAmountChange} />}
-            <div id="App" />
+            <button onClick={refresh}>Trigger refresh</button>
+            <input min={0} type="number" value={amount.toString()} onChange={onAmountChange} />
+            <Users />
         </>
     );
 };

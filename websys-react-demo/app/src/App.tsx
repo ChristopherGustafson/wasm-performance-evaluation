@@ -27,7 +27,11 @@ const App = () => {
         <div>
             <select onChange={onSelectImplementation}>
                 {Object.values(Implementation).map((impl) => {
-                    return <option value={impl}>{impl}</option>;
+                    return (
+                        <option key={impl} value={impl}>
+                            {impl}
+                        </option>
+                    );
                 })}
             </select>
             <br />
