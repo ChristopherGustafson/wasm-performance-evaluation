@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>title</title>
+    <script>
+      (async () => {
+        let response = await fetch(
+          "target/wasm32-unknown-unknown/release/tm_wasm_module.wasm"
+        );
+        let bytes = await response.arrayBuffer();
+        let {instance} = await WebAssembly.instantiate(bytes, {});
+
+        console.log("The answer is: ", instance.exports.run());
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
