@@ -6,6 +6,12 @@ const generateUserAmounts = (start: number, stop: number, step: number) => {
     });
 };
 
+export type CSVResults = {
+    sort: string;
+    render: string;
+    total: string;
+};
+
 export const USER_AMOUNTS = generateUserAmounts(10, 1000, 10);
 
 export const ITERATIONS = 10;

@@ -1,3 +1,6 @@
+/* The type of data we are expecting as input */
+export type Data = { [amount: number]: number[] };
+
 /**
  * From a matrix of values, create a stringified CSV-version of the matrix
  * @param matrix
@@ -16,7 +19,7 @@ const matrixToCSV = (matrix: (string | number)[][]) => {
  * @param {{[amount: number]: number[]}} data An object with keys being an array of metrics
  * @returns An object URL, can be used in a link-element to download on click.
  */
-const dataToCSV = (data: { [amount: number]: number[] }): string => {
+const dataToCSV = (data: Data): string => {
     const amounts = Object.keys(data);
 
     const iterationsMatrix: number[][] = [];
