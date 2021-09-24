@@ -54,6 +54,8 @@ const Wasm: React.FC = () => {
                 resultsSort[amount].push(sortingTime);
                 resultsRender[amount].push(renderTime);
                 resultsTotal[amount].push(sortingTime + renderTime);
+                // Add small delay to avoid update depth conflicts
+                await new Promise((resolve) => setTimeout(resolve, 1));
             }
         }
         console.log("[WASM] Sort data:");
