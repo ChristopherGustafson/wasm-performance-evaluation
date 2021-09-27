@@ -1,4 +1,4 @@
-import { ChangeEvent, Profiler, ProfilerOnRenderCallback, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { name } from "faker/locale/en";
 import measureTime from "./lib/measureTime";
 
@@ -7,10 +7,28 @@ import dataToCSV, { Data } from "./lib/toCSV";
 import { Implementation, implementations } from "./lib/implementations";
 import quickSort, { Cmp } from "./lib/quickSort";
 
+import "slickgrid/slick.core";
+import "slickgrid/lib/jquery.event.drag-2.3.0";
+import "slickgrid/slick.grid";
+import "slickgrid/slick.grid.css";
+
 type User = {
     id: number;
     firstName: string;
     lastName: string;
+};
+
+const columns: Array<Slick.Column<User>> = [
+    { id: "id", name: "ID", field: "id" },
+    { id: "firstName", name: "First name", field: "firstName" },
+    { id: "lastName", name: "Last name", field: "lastName" },
+];
+
+const gridOptions = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    autoHeight: true,
+    fullWidthRows: true,
 };
 
 const generateUser = (index: number): User => {
@@ -40,19 +58,6 @@ function sortNative<T>(arr: Array<T>, cmp: Cmp<T>): Array<T> {
     return arr.sort(cmp);
 }
 
-const Users: React.FC<{ users: User[] }> = ({ users }) => {
-    return (
-        <ul id="user_list">
-            {users.map((user) => (
-                <li key={user.id}>
-                    <span>{user.firstName}</span>
-                    <span>{user.lastName}</span>
-                </li>
-            ))}
-        </ul>
-    );
-};
-
 type ExperimentData = {
     sort: Data;
     render: Data;
@@ -81,7 +86,7 @@ const Js = () => {
         }
     };
 
-    const updateUserList = (value: string): number => {
+    const updateUserList = (value: string): [number, number] => {
         const parsedValue = value === "" ? 0 : parseInt(value);
         const generatedUsers = generateUsers(parsedValue);
         const sortFunction = getSortFunction(implementation);
@@ -96,7 +101,11 @@ const Js = () => {
             experimentData.sort[parsedValue].push(sortingTime);
         }
         setUsers(sortedUsers);
-        return sortingTime;
+        const createSlickGrid = () => {
+            new Slick.Grid("#slick", sortedUsers, columns, gridOptions);
+        };
+        const renderTime = measureTime(createSlickGrid, `[JS] render ${generatedUsers.length} users`)[1];
+        return [sortingTime, renderTime];
     };
 
     const onAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -108,64 +117,40 @@ const Js = () => {
     };
 
     const runExperiments = async () => {
-        // Start experiment by flushing old data and setting running to true
-        experimentRunning = true;
-        experimentData = {
-            sort: JSON.parse(JSON.stringify(resultsEmpty)),
-            render: JSON.parse(JSON.stringify(resultsEmpty)),
-        };
-        updateUserList(USER_AMOUNTS[0].toString());
-    };
+        const resultsEmpty: Data = USER_AMOUNTS.reduce(
+            (prevValue, currentValue) => ({ ...prevValue, [currentValue]: [] }),
+            {}
+        );
+        // Deep copy the empty results =
+        const resultsSort: Data = JSON.parse(JSON.stringify(resultsEmpty));
+        const resultsRender: Data = JSON.parse(JSON.stringify(resultsEmpty));
+        const resultsTotal: Data = JSON.parse(JSON.stringify(resultsEmpty));
 
-    const calculateResults = () => {
-        const total = USER_AMOUNTS.reduce((prev, curr) => {
-            const totalAmount = experimentData.render[curr].map((render, i) => render + experimentData.sort[curr][i]);
-            return { ...prev, [curr]: totalAmount };
-        }, {} as Data);
-
-        const results: CSVResults = {
-            sort: dataToCSV(experimentData.sort),
-            render: dataToCSV(experimentData.render),
-            total: dataToCSV(total),
-        };
-        console.log("[JS] Sort data:");
-        console.table(experimentData.sort);
-        console.log("[JS] Render data:");
-        console.table(experimentData.render);
-        console.log("[JS] Total data:");
-        console.table(total);
-
-        setCSVResults(results);
-    };
-
-    const onRender: ProfilerOnRenderCallback = (
-        id,
-        phase,
-        actualDuration,
-        baseDuration,
-        startTime,
-        commitTime,
-        interactions
-    ) => {
-        if (experimentRunning) {
-            const amountNumber = users.length;
-            experimentData.render[amountNumber].push(actualDuration);
-            if (experimentData.render[amountNumber].length === ITERATIONS) {
-                // If we have more amounts to test, select the next one
-                if (amountNumber !== USER_AMOUNTS.slice(-1)[0]) {
-                    // Get the next amount in an ordered fashion
-                    updateUserList(USER_AMOUNTS[USER_AMOUNTS.indexOf(amountNumber) + 1].toString());
-                } else {
-                    // If no more to test, calculate the results and stop experiment
-                    calculateResults();
-                    experimentRunning = false;
-                }
-            } else {
-                // To avoid reaching maximum update depth, add a small delay here
-                setTimeout(refresh, 1);
+        for (const amount of USER_AMOUNTS) {
+            for (let iteration = 0; iteration < ITERATIONS; iteration++) {
+                const [sortingTime, renderTime] = await updateUserList(amount.toString());
+                resultsSort[amount].push(sortingTime);
+                resultsRender[amount].push(renderTime);
+                resultsTotal[amount].push(sortingTime + renderTime);
+                // Add small delay to avoid update depth conflicts
+                await new Promise((resolve) => setTimeout(resolve, 1));
             }
         }
-        console.log(`[JS] Render time: ${actualDuration}ms`);
+        console.log("[WASM] Sort data:");
+        console.table(resultsSort);
+        console.log("[WASM] Render data:");
+        console.table(resultsRender);
+        console.log("[WASM] Total data:");
+        console.table(resultsTotal);
+
+        const resultsSortCSV = dataToCSV(resultsSort);
+        const resultsRenderCSV = dataToCSV(resultsRender);
+        const resultsTotalCSV = dataToCSV(resultsTotal);
+        setCSVResults({
+            sort: resultsSortCSV,
+            render: resultsRenderCSV,
+            total: resultsTotalCSV,
+        });
     };
 
     const onImplementationChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -187,22 +172,20 @@ const Js = () => {
             <br />
             {CSVResults && (
                 <>
-                    <a href={CSVResults.sort} download={"wasm-experiment-results-sort.csv"}>
+                    <a href={CSVResults.sort} download={"js-experiment-results-sort-slick.csv"}>
                         Download sort results
                     </a>
                     <br />
-                    <a href={CSVResults.render} download={"wasm-experiment-results-render.csv"}>
+                    <a href={CSVResults.render} download={"js-experiment-results-render-slick.csv"}>
                         Download render results
                     </a>
                     <br />
-                    <a href={CSVResults.total} download={"wasm-experiment-results-total.csv"}>
+                    <a href={CSVResults.total} download={"js-experiment-results-total-slick.csv"}>
                         Download total results
                     </a>
                 </>
             )}
-            <Profiler id="js" onRender={onRender}>
-                <Users users={users} />
-            </Profiler>
+            <div id="slick" />
         </>
     );
 };

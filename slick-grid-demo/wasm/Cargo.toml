@@ -23,4 +23,6 @@ features = [
     "Element",
     "HtmlElement",
     "Node",
+    "HtmlCollection",
+    "CssStyleDeclaration",
 ]

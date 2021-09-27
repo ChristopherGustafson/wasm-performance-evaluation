@@ -1,0 +1,5 @@
+#slick,
+.slick-pane.slick-pane-top.slick-pane-left,
+.slick-viewport.slick-viewport-top.slick-viewport-left {
+    overflow: visible !important;
+}

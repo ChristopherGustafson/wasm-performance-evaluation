@@ -4,29 +4,44 @@ import { Implementation, implementations } from "./lib/implementations";
 import measureTime from "./lib/measureTime";
 import dataToCSV, { Data } from "./lib/toCSV";
 
-const wasm = import("wasm");
+import "slickgrid/slick.core";
+import "slickgrid/lib/jquery.event.drag-2.3.0";
+import "slickgrid/slick.grid";
+import "slickgrid/slick.grid.css";
 
-const Users: React.FC = () => {
-    return <div id="App" />;
+type User = {
+    firstName: string;
+    lastName: string;
 };
+
+const columns: Array<Slick.Column<User>> = [
+    { id: "firstName", name: "First name", field: "firstName" },
+    { id: "lastName", name: "Last name", field: "lastName" },
+];
+
+const gridOptions = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    autoHeight: true,
+    fullWidthRows: true,
+};
+
+const wasm = import("wasm");
 
 const Wasm: React.FC = () => {
     const [CSVResults, setCSVResults] = useState<CSVResults>();
     const [implementation, setImplementation] = useState<Implementation>(Implementation.Native);
     const [amount, setAmount] = useState("100");
 
-    useEffect(() => {
-        wasm.then((module) => {
-            module.init();
-        });
-    }, []);
-
     const updateUserList = (value: string) => {
         const parsedValue = value === "" ? 0 : parseInt(value);
         return wasm.then((module) => {
             module.generate_users(parsedValue);
             const sortingTime = measureTime(module.sort_users, `[WASM] sort ${parsedValue} users`, implementation)[1];
+            // Create empty slick grid table
+            const grid = new Slick.Grid("#slick", [], columns, gridOptions);
             const renderTime = measureTime(module.render_users, `[WASM] render ${parsedValue} users`)[1];
+            grid.autosizeColumns();
             return [sortingTime, renderTime];
         });
     };
@@ -109,7 +124,7 @@ const Wasm: React.FC = () => {
                     </a>
                 </>
             )}
-            <Users />
+            <div id="slick" />
         </>
     );
 };
