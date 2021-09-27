@@ -1,9 +1,15 @@
-const generateUserAmounts = (start: number, stop: number, step: number) => {
-    const size = (stop - start) / step + 1;
+const generateUserAmounts = (start: number, stop: number) => {
+    const array = [];
 
-    return Array.from({ length: size }, (_value, key) => {
-        return start + key * step;
-    });
+    let next = start;
+    let last = undefined;
+
+    do {
+        array.push(next);
+        [last] = array.slice(-1);
+        next = last * 2;
+    } while (next <= stop);
+    return array;
 };
 
 export type CSVResults = {
@@ -12,6 +18,6 @@ export type CSVResults = {
     total: string;
 };
 
-export const USER_AMOUNTS = generateUserAmounts(10, 1000, 100);
+export const USER_AMOUNTS = generateUserAmounts(10, 10240);
 
-export const ITERATIONS = 10;
+export const ITERATIONS = 100;

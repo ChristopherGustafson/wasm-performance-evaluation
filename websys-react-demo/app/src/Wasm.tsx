@@ -87,7 +87,9 @@ const Wasm: React.FC = () => {
             <button onClick={refresh}>Trigger refresh</button>
             <select value={implementation} onChange={onImplementationChange}>
                 {implementations.map((imp) => (
-                    <option value={imp[1]}>{imp[0]}</option>
+                    <option key={imp[1]} value={imp[1]}>
+                        {imp[0]}
+                    </option>
                 ))}
             </select>
             <input min={0} type="number" value={amount.toString()} onChange={onAmountChange} />
