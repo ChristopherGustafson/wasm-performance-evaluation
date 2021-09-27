@@ -4,6 +4,8 @@ import measureTime from "./lib/measureTime";
 
 import { ITERATIONS, USER_AMOUNTS, CSVResults } from "./lib/experiment";
 import dataToCSV, { Data } from "./lib/toCSV";
+import { Implementation, implementations } from "./lib/implementations";
+import quickSort, { Cmp } from "./lib/quickSort";
 
 type User = {
     id: number;
@@ -25,17 +27,18 @@ const generateUsers = (amount: number): User[] => {
     });
 };
 
-const sortUsers = (users: User[]): User[] => {
-    const sorted = users.sort((a, b) => {
-        if (a.firstName.toLowerCase() > b.firstName.toLowerCase()) {
-            return 1;
-        } else if (a.firstName.toLowerCase() < b.firstName.toLowerCase()) {
-            return -1;
-        }
-        return 0;
-    });
-    return sorted;
+const userCmp = (a: User, b: User): -1 | 0 | 1 => {
+    if (a.firstName.toLowerCase() > b.firstName.toLowerCase()) {
+        return 1;
+    } else if (a.firstName.toLowerCase() < b.firstName.toLowerCase()) {
+        return -1;
+    }
+    return 0;
 };
+
+function sortNative<T>(arr: Array<T>, cmp: Cmp<T>): Array<T> {
+    return arr.sort(cmp);
+}
 
 const Users: React.FC<{ users: User[] }> = ({ users }) => {
     return (
@@ -65,16 +68,28 @@ let experimentData: ExperimentData = {
 let experimentRunning = false;
 
 const Js = () => {
+    const [implementation, setImplementation] = useState<Implementation>(Implementation.Native);
     const [CSVResults, setCSVResults] = useState<CSVResults>();
     const [users, setUsers] = useState(generateUsers(100));
+
+    const getSortFunction = (imp: Implementation) => {
+        switch (imp) {
+            case Implementation.Native:
+                return sortNative;
+            case Implementation.QuickSort:
+                return quickSort;
+        }
+    };
 
     const updateUserList = (value: string): number => {
         const parsedValue = value === "" ? 0 : parseInt(value);
         const generatedUsers = generateUsers(parsedValue);
+        const sortFunction = getSortFunction(implementation);
         const [sortedUsers, sortingTime] = measureTime(
-            sortUsers,
+            sortFunction,
             `[JS] sort ${generatedUsers.length} users`,
-            generatedUsers
+            generatedUsers,
+            userCmp
         );
         if (experimentRunning) {
             // If experiment is running add the measured value to the experiment data
@@ -153,10 +168,19 @@ const Js = () => {
         console.log(`[JS] Render time: ${actualDuration}ms`);
     };
 
+    const onImplementationChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        setImplementation(parseInt(event.target.value));
+    };
+
     return (
         <>
             <button onClick={runExperiments}>Run experiments</button>
             <button onClick={refresh}>Trigger refresh</button>
+            <select value={implementation} onChange={onImplementationChange}>
+                {implementations.map((imp) => (
+                    <option value={imp[1]}>{imp[0]}</option>
+                ))}
+            </select>
             <input min={0} type="number" value={users.length} onChange={onAmountChange} />
             <br />
             {CSVResults && (

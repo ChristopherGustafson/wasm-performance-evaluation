@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { CSVResults, ITERATIONS, USER_AMOUNTS } from "./lib/experiment";
+import { Implementation, implementations } from "./lib/implementations";
 import measureTime from "./lib/measureTime";
 import dataToCSV, { Data } from "./lib/toCSV";
 
@@ -11,6 +12,7 @@ const Users: React.FC = () => {
 
 const Wasm: React.FC = () => {
     const [CSVResults, setCSVResults] = useState<CSVResults>();
+    const [implementation, setImplementation] = useState<Implementation>(Implementation.Native);
     const [amount, setAmount] = useState("100");
 
     useEffect(() => {
@@ -23,7 +25,7 @@ const Wasm: React.FC = () => {
         const parsedValue = value === "" ? 0 : parseInt(value);
         return wasm.then((module) => {
             module.generate_users(parsedValue);
-            const sortingTime = measureTime(module.sort_users, `[WASM] sort ${parsedValue} users`)[1];
+            const sortingTime = measureTime(module.sort_users, `[WASM] sort ${parsedValue} users`, implementation)[1];
             const renderTime = measureTime(module.render_users, `[WASM] render ${parsedValue} users`)[1];
             return [sortingTime, renderTime];
         });
@@ -75,10 +77,19 @@ const Wasm: React.FC = () => {
         });
     };
 
+    const onImplementationChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        setImplementation(parseInt(event.target.value));
+    };
+
     return (
         <>
             <button onClick={runExperiments}>Run experiments</button>
             <button onClick={refresh}>Trigger refresh</button>
+            <select value={implementation} onChange={onImplementationChange}>
+                {implementations.map((imp) => (
+                    <option value={imp[1]}>{imp[0]}</option>
+                ))}
+            </select>
             <input min={0} type="number" value={amount.toString()} onChange={onAmountChange} />
             <br />
             {CSVResults && (

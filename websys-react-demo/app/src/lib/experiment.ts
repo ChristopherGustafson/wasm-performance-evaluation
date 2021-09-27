@@ -12,6 +12,6 @@ export type CSVResults = {
     total: string;
 };
 
-export const USER_AMOUNTS = generateUserAmounts(10, 1000, 10);
+export const USER_AMOUNTS = generateUserAmounts(10, 1000, 100);
 
 export const ITERATIONS = 10;

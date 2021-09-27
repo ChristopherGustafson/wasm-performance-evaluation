@@ -1,6 +1,6 @@
+mod quick_sort;
 mod user_faker;
 use wasm_bindgen::prelude::*;
-
 static mut USERS: Vec<user_faker::User> = Vec::new();
 
 #[wasm_bindgen]
@@ -46,14 +46,32 @@ pub fn generate_users(user_amount: u32) {
 }
 
 #[wasm_bindgen]
-pub fn sort_users() {
-    unsafe {
-        USERS.sort_by(|a, b| {
-            a.first_name
-                .to_lowercase()
-                .cmp(&b.first_name.to_lowercase())
-        });
-    };
+pub enum Implementation {
+    Native,
+    QuickSort,
+}
+
+#[wasm_bindgen]
+pub fn sort_users(implementation: Implementation) {
+    fn cmp(a: &user_faker::User, b: &user_faker::User) -> core::cmp::Ordering {
+        return a
+            .first_name
+            .to_lowercase()
+            .cmp(&b.first_name.to_lowercase());
+    }
+
+    match implementation {
+        Implementation::Native => unsafe {
+            USERS.sort_by(|a, b| {
+                a.first_name
+                    .to_lowercase()
+                    .cmp(&b.first_name.to_lowercase())
+            });
+        },
+        Implementation::QuickSort => unsafe {
+            quick_sort::quick_sort(&mut USERS, cmp);
+        },
+    }
 }
 
 /// Initializes a user list.
@@ -71,4 +89,18 @@ pub fn init() {
     let user_list_element: web_sys::Element = document.create_element("ul").unwrap();
     user_list_element.set_id("user_list");
     app_element.append_child(&user_list_element).unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::quick_sort::quick_sort;
+    #[test]
+    fn test_quick_sort() {
+        let mut vec: Vec<i32> = vec![2, 4, 3, 1, 5];
+        fn cmp(a: &i32, b: &i32) -> core::cmp::Ordering {
+            a.cmp(&b)
+        }
+        quick_sort(&mut vec, cmp);
+        assert_eq!(vec, vec![1, 2, 3, 4, 5]);
+    }
 }
