@@ -20,8 +20,6 @@ const columns: Array<Slick.Column<User>> = [
 ];
 
 const gridOptions = {
-    enableCellNavigation: true,
-    enableColumnReorder: false,
     autoHeight: true,
     fullWidthRows: true,
 };
