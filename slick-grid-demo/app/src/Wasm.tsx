@@ -1,6 +1,6 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { CSVResults, ITERATIONS, USER_AMOUNTS } from "./lib/experiment";
-import { Implementation, implementations } from "./lib/implementations";
+import { Implementation, implementationName, implementations } from "./lib/implementations";
 import measureTime from "./lib/measureTime";
 import dataToCSV, { Data } from "./lib/toCSV";
 
@@ -109,15 +109,24 @@ const Wasm: React.FC = () => {
             <br />
             {CSVResults && (
                 <>
-                    <a href={CSVResults.sort} download={"wasm-experiment-results-sort.csv"}>
+                    <a
+                        href={CSVResults.sort}
+                        download={`wasm-experiment-results-sort-${implementationName(implementation)}-slick.csv`}
+                    >
                         Download sort results
                     </a>
                     <br />
-                    <a href={CSVResults.render} download={"wasm-experiment-results-render.csv"}>
+                    <a
+                        href={CSVResults.render}
+                        download={`wasm-experiment-results-render-${implementationName(implementation)}-slick.csv`}
+                    >
                         Download render results
                     </a>
                     <br />
-                    <a href={CSVResults.total} download={"wasm-experiment-results-total.csv"}>
+                    <a
+                        href={CSVResults.total}
+                        download={`wasm-experiment-results-total-${implementationName(implementation)}-slick.csv`}
+                    >
                         Download total results
                     </a>
                 </>

@@ -18,6 +18,6 @@ export type CSVResults = {
     total: string;
 };
 
-export const USER_AMOUNTS = generateUserAmounts(10, 10240);
+export const USER_AMOUNTS = generateUserAmounts(10, 1280);
 
-export const ITERATIONS = 100;
+export const ITERATIONS = 40;

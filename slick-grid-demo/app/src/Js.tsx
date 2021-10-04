@@ -4,7 +4,7 @@ import measureTime from "./lib/measureTime";
 
 import { ITERATIONS, USER_AMOUNTS, CSVResults } from "./lib/experiment";
 import dataToCSV, { Data } from "./lib/toCSV";
-import { Implementation, implementations } from "./lib/implementations";
+import { Implementation, implementationName, implementations } from "./lib/implementations";
 import quickSort, { Cmp } from "./lib/quickSort";
 
 import "slickgrid/slick.core";
@@ -172,15 +172,24 @@ const Js = () => {
             <br />
             {CSVResults && (
                 <>
-                    <a href={CSVResults.sort} download={"js-experiment-results-sort-slick.csv"}>
+                    <a
+                        href={CSVResults.sort}
+                        download={`js-experiment-results-sort-${implementationName(implementation)}-slick.csv`}
+                    >
                         Download sort results
                     </a>
                     <br />
-                    <a href={CSVResults.render} download={"js-experiment-results-render-slick.csv"}>
+                    <a
+                        href={CSVResults.render}
+                        download={`js-experiment-results-render-${implementationName(implementation)}-slick.csv`}
+                    >
                         Download render results
                     </a>
                     <br />
-                    <a href={CSVResults.total} download={"js-experiment-results-total-slick.csv"}>
+                    <a
+                        href={CSVResults.total}
+                        download={`js-experiment-results-total-${implementationName(implementation)}-slick.csv`}
+                    >
                         Download total results
                     </a>
                 </>
