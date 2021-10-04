@@ -12,7 +12,7 @@ time_render_func <- function(n, k2, c2) {
 }
 
 # Generate graph and fit expected equation for the specified sorting data
-create_sort_graphs <- function(js_data, wasm_data, output_dir, log) {
+create_sort_graphs <- function(js_data, wasm_data, output_dir, log, print = TRUE) {
   # Define output file
   if (log) {
     jpeg(file = stringr::str_interp("out/${output_dir}/sort-plot-log.jpeg"))
@@ -20,6 +20,7 @@ create_sort_graphs <- function(js_data, wasm_data, output_dir, log) {
     jpeg(file = stringr::str_interp("out/${output_dir}/sort-plot.jpeg"))
   }
 
+  max <- max(tail(wasm_data[, 2], n = 1), tail(js_data[, 2], n = 1))
 
   # Plot wasm sorting data
   x <- wasm_data[, 1]
@@ -29,10 +30,13 @@ create_sort_graphs <- function(js_data, wasm_data, output_dir, log) {
     y,
     xlab = "User list size",
     ylab = "Execution time (ms)",
-    log = if (log) "x" else ""
+    log = if (log) "x" else "",
+    ylim = c(0, max),
   )
   fit <- nls(y ~ time_sort_func(x, k1, c1), start = list(k1 = 1, c1 = 0))
-  print(summary(fit))
+  if (print) {
+    print(summary(fit))
+  }
 
 
   # Plot JS sorting data
@@ -52,11 +56,13 @@ create_sort_graphs <- function(js_data, wasm_data, output_dir, log) {
   )
 
   dev.off()
-  print(summary(fit))
+  if (print) {
+    print(summary(fit))
+  }
 }
 
 # Generate graph and fit expected equation for the specified rendering data
-create_render_graphs <- function(js_data, wasm_data, output_dir, log) {
+create_render_graphs <- function(js_data, wasm_data, output_dir, log, print = TRUE) {
   if (log) {
     jpeg(file = stringr::str_interp("out/${output_dir}/render-plot-log.jpeg"))
   } else {
@@ -79,7 +85,9 @@ create_render_graphs <- function(js_data, wasm_data, output_dir, log) {
     y ~ time_render_func(x, k2, c2),
     start = list(k2 = 1, c2 = 0),
   )
-  print(summary(fit))
+  if (print) {
+    print(summary(fit))
+  }
 
   # Plot JS data
   x <- js_data[, 1]
@@ -97,11 +105,13 @@ create_render_graphs <- function(js_data, wasm_data, output_dir, log) {
     pch = c(1, 16)
   )
   dev.off()
-  # print(summary(fit))
+  if (print) {
+    print(summary(fit))
+  }
 }
 
 # Generate a speedup plot, using Y1/Y2
-create_speedup_plot <- function(x, y1, y2, output_dir, log) {
+create_speedup_plot <- function(x, y1, y2, output_dir, log, print = TRUE) {
   y <- y1 / y2
   reg1 <- lm(y ~ x)
   if (log) {
@@ -117,7 +127,9 @@ create_speedup_plot <- function(x, y1, y2, output_dir, log) {
     log = if (log) "x" else ""
   )
   abline(reg1)
-  print(reg1)
+  if (print) {
+    print(summary(reg1))
+  }
   dev.off()
 }
 
@@ -161,7 +173,8 @@ main <- function(js_sort_file, js_render_file, wasm_sort_file, wasm_render_file,
     js_data = js_sort_data$median,
     wasm_data = wasm_sort_data$median,
     output_dir = output_dir,
-    log = TRUE
+    log = TRUE,
+    print = FALSE
   )
 
   print("Analyzing rendering")
@@ -175,7 +188,8 @@ main <- function(js_sort_file, js_render_file, wasm_sort_file, wasm_render_file,
     js_data = js_render_data$median,
     wasm_data = wasm_render_data$median,
     output_dir = output_dir,
-    log = TRUE
+    log = TRUE,
+    print = FALSE
   )
 
   print("Analyzing speedup")
@@ -184,7 +198,7 @@ main <- function(js_sort_file, js_render_file, wasm_sort_file, wasm_render_file,
     y1 = js_sort_data$median[, 2] + js_render_data$median[, 2],
     y2 = wasm_sort_data$median[, 2] + wasm_render_data$median[, 2],
     output_dir = output_dir,
-    log = FALSE
+    log = FALSE,
   )
 }
 

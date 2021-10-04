@@ -54,10 +54,7 @@ pub enum Implementation {
 #[wasm_bindgen]
 pub fn sort_users(implementation: Implementation) {
     fn cmp(a: &user_faker::User, b: &user_faker::User) -> core::cmp::Ordering {
-        return a
-            .first_name
-            .to_lowercase()
-            .cmp(&b.first_name.to_lowercase());
+        return a.first_name.cmp(&b.first_name);
     }
 
     match implementation {

@@ -8,23 +8,19 @@ import { Implementation, implementations } from "./lib/implementations";
 import quickSort, { Cmp } from "./lib/quickSort";
 
 type User = {
-    id: number;
     firstName: string;
     lastName: string;
 };
 
-const generateUser = (index: number): User => {
+const generateUser = (): User => {
     return {
-        id: index,
         firstName: name.firstName(),
         lastName: name.lastName(),
     };
 };
 
 const generateUsers = (amount: number): User[] => {
-    return Array.from({ length: amount }, (_value, index) => {
-        return generateUser(index);
-    });
+    return Array.from({ length: amount }, generateUser);
 };
 
 const userCmp = (a: User, b: User): -1 | 0 | 1 => {
@@ -43,8 +39,8 @@ function sortNative<T>(arr: Array<T>, cmp: Cmp<T>): Array<T> {
 const Users: React.FC<{ users: User[] }> = ({ users }) => {
     return (
         <ul id="user_list">
-            {users.map((user) => (
-                <li key={user.id}>
+            {users.map((user, index) => (
+                <li key={index}>
                     <span>{user.firstName}</span>
                     <span>{user.lastName}</span>
                 </li>

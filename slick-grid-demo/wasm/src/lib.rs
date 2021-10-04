@@ -62,19 +62,12 @@ pub enum Implementation {
 #[wasm_bindgen]
 pub fn sort_users(implementation: Implementation) {
     fn cmp(a: &user_faker::User, b: &user_faker::User) -> core::cmp::Ordering {
-        return a
-            .first_name
-            .to_lowercase()
-            .cmp(&b.first_name.to_lowercase());
+        return a.first_name.cmp(&b.first_name);
     }
 
     match implementation {
         Implementation::Native => unsafe {
-            USERS.sort_by(|a, b| {
-                a.first_name
-                    .to_lowercase()
-                    .cmp(&b.first_name.to_lowercase())
-            });
+            USERS.sort_by(|a, b| a.first_name.cmp(&b.first_name));
         },
         Implementation::QuickSort => unsafe {
             quick_sort::quick_sort(&mut USERS, cmp);

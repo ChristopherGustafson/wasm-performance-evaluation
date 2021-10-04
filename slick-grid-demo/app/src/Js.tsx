@@ -13,13 +13,11 @@ import "slickgrid/slick.grid";
 import "slickgrid/slick.grid.css";
 
 type User = {
-    id: number;
     firstName: string;
     lastName: string;
 };
 
 const columns: Array<Slick.Column<User>> = [
-    { id: "id", name: "ID", field: "id" },
     { id: "firstName", name: "First name", field: "firstName" },
     { id: "lastName", name: "Last name", field: "lastName" },
 ];
@@ -33,7 +31,6 @@ const gridOptions = {
 
 const generateUser = (index: number): User => {
     return {
-        id: index,
         firstName: name.firstName(),
         lastName: name.lastName(),
     };
@@ -46,9 +43,9 @@ const generateUsers = (amount: number): User[] => {
 };
 
 const userCmp = (a: User, b: User): -1 | 0 | 1 => {
-    if (a.firstName.toLowerCase() > b.firstName.toLowerCase()) {
+    if (a.firstName > b.firstName) {
         return 1;
-    } else if (a.firstName.toLowerCase() < b.firstName.toLowerCase()) {
+    } else if (a.firstName < b.firstName) {
         return -1;
     }
     return 0;
