@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { name } from "faker/locale/en";
 import measureTime from "./lib/measureTime";
 
@@ -73,6 +73,7 @@ let experimentData: ExperimentData = {
 let experimentRunning = false;
 
 const Js = () => {
+    const slickGrid = useRef<Slick.Grid<User>>(null);
     const [implementation, setImplementation] = useState<Implementation>(Implementation.Native);
     const [CSVResults, setCSVResults] = useState<CSVResults>();
     const [users, setUsers] = useState(generateUsers(100));
@@ -101,10 +102,14 @@ const Js = () => {
             experimentData.sort[parsedValue].push(sortingTime);
         }
         setUsers(sortedUsers);
-        const createSlickGrid = () => {
-            new Slick.Grid("#slick", sortedUsers, columns, gridOptions);
+        if (slickGrid.current === null) {
+            (slickGrid.current as any) = new Slick.Grid("#slick", [], columns, gridOptions);
+        }
+        const updateSlickGrid = () => {
+            slickGrid.current?.setData(sortedUsers, false);
+            slickGrid.current?.render();
         };
-        const renderTime = measureTime(createSlickGrid, `[JS] render ${generatedUsers.length} users`)[1];
+        const renderTime = measureTime(updateSlickGrid, `[JS] render ${generatedUsers.length} users`)[1];
         return [sortingTime, renderTime];
     };
 

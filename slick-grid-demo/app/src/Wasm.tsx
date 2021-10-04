@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { CSVResults, ITERATIONS, USER_AMOUNTS } from "./lib/experiment";
 import { Implementation, implementationName, implementations } from "./lib/implementations";
 import measureTime from "./lib/measureTime";
@@ -27,6 +27,7 @@ const gridOptions = {
 const wasm = import("wasm");
 
 const Wasm: React.FC = () => {
+    const gridRef = useRef<Slick.Grid<User[]>>(null);
     const [CSVResults, setCSVResults] = useState<CSVResults>();
     const [implementation, setImplementation] = useState<Implementation>(Implementation.Native);
     const [amount, setAmount] = useState("100");
@@ -37,9 +38,10 @@ const Wasm: React.FC = () => {
             module.generate_users(parsedValue);
             const sortingTime = measureTime(module.sort_users, `[WASM] sort ${parsedValue} users`, implementation)[1];
             // Create empty slick grid table
-            const grid = new Slick.Grid("#slick", [], columns, gridOptions);
+            if (gridRef.current === null) {
+                (gridRef.current as any) = new Slick.Grid("#slick", [], columns, gridOptions);
+            }
             const renderTime = measureTime(module.render_users, `[WASM] render ${parsedValue} users`)[1];
-            grid.autosizeColumns();
             return [sortingTime, renderTime];
         });
     };

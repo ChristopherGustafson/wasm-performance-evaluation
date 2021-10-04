@@ -13,6 +13,8 @@ pub fn render_users() -> () {
         .item(0)
         .expect("an element with id user_list must exist");
 
+    // Set inner HTML
+    user_list_element.set_inner_html("");
     unsafe {
         for (i, user) in USERS.iter().enumerate() {
             // Create li containing the user
