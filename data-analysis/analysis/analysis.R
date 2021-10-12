@@ -110,6 +110,32 @@ create_render_graphs <- function(js_data, wasm_data, output_dir, log, print = TR
   }
 }
 
+create_box_plots <- function(js_data,
+                             wasm_data,
+                             output_dir,
+                             type) {
+  jpeg(
+    file =
+      stringr::str_interp("out/${output_dir}/render-box-plot-${type}-wasm.jpeg")
+  )
+  boxplot.matrix(wasm_data[, 5:11],
+    xlab = "User list size",
+    ylab = "Execution time (ms)",
+  )
+  dev.off()
+
+  jpeg(
+    file =
+      stringr::str_interp("out/${output_dir}/render-box-${type}-plot-js.jpeg")
+  )
+
+  boxplot.matrix(js_data[, 5:11],
+    xlab = "User list size",
+    ylab = "Execution time (ms)",
+  )
+  dev.off()
+}
+
 # Generate a speedup plot, using Y1/Y2
 create_speedup_plot <- function(x, y1, y2, output_dir, log, print = TRUE) {
   y <- y1 / y2
@@ -141,6 +167,7 @@ get_data <- function(file) {
   )
   y_data <- as.matrix(file_data[-1, ])
   x_data <- t(file_data[1, ])
+  colnames(y_data) <- x_data
 
   medians <- data.frame(
     ID = x_data,
@@ -194,11 +221,25 @@ main <- function(js_sort_file, js_render_file, wasm_sort_file, wasm_render_file,
 
   print("Analyzing speedup")
   create_speedup_plot(
-    x = wasm_sort_data$median[, 1] + wasm_render_data$median[, 1],
+    x = wasm_sort_data$median[, 1],
     y1 = js_sort_data$median[, 2] + js_render_data$median[, 2],
     y2 = wasm_sort_data$median[, 2] + wasm_render_data$median[, 2],
     output_dir = output_dir,
     log = FALSE,
+  )
+
+  print("Creating box plots")
+  create_box_plots(
+    wasm_data = wasm_sort_data$y,
+    js_data = js_sort_data$y,
+    output_dir = output_dir,
+    type = "sort"
+  )
+  create_box_plots(
+    wasm_data = wasm_render_data$y,
+    js_data = js_render_data$y,
+    output_dir = output_dir,
+    type = "render"
   )
 }
 
